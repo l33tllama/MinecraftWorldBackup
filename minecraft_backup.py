@@ -16,9 +16,13 @@ class MinecraftWorldBackup():
         self.server_directory = self.config['SETTINGS']['ServerDirectory']
         self.world_name = self.config['SETTINGS']['WorldName']
         self.screen_name = self.config['SETTINGS']['ScreenSessionName']
+        self.screen_type = self.config['SETTINGS']['ScreenType']
 
     def screen_mc_cmd(self, cmd):
-        system_call = "screen -R " + self.screen_name + " -X stuff \"" + cmd + " $(printf '\\r')\""
+        if self.screen_type == "screen":
+            system_call = "screen -R " + self.screen_name + " -X stuff \"" + cmd + " $(printf '\\r')\""
+        elif self.screen_type == "tmux":
+            system_call = "tmux send-keys -t " + self.screen_name + " " + cmd + " ENTER"
         os.system(system_call)
         print(system_call)
 
@@ -76,7 +80,7 @@ class MinecraftWorldBackup():
         backup_files.sort()
 
         # First time backup
-        if len(backup_files) is 0:
+        if len(backup_files) == 0:
             now = datetime.datetime.now()
             next_hour = now - datetime.timedelta(minutes=now.minute, seconds = now.second, microseconds = now.microsecond)
             next_hour = next_hour + datetime.timedelta(hours = 1)
@@ -119,6 +123,7 @@ class MinecraftWorldBackup():
         self.backup_retention_amount = 8
         self.server_directory = ""
         self.world_name = ""
+        self.screen_type = "tmux"
         self.cfg_filename = "config.cfg"
 
         self.load_config()
